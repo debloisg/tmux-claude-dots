@@ -13,13 +13,15 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 state_dir="$(cd_state_dir)"
 
 emit_rows() {
-  local pid sess widx wname cmd cwd st icon
-  while IFS=$'\t' read -r pid sess widx wname cmd cwd; do
+  local pid sess widx wname cmd cwd active inwin st icon marker
+  while IFS=$'\t' read -r pid sess widx wname cmd cwd active inwin; do
     st="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
     icon="$(cd_icon_ansi "$st")"
+    marker=""
+    [ "$active" = "1" ] && marker=$'  \033[1;36m← here\033[0m'
     # Field 1 (hidden) = pane id target. Display starts at field 2.
-    printf '%s\t%b  \033[1m%s\033[0m \033[90m▸\033[0m %s \033[90m▸\033[0m %s  \033[90m%s\033[0m\n' \
-      "$pid" "$icon" "$sess" "$wname" "$cmd" "${cwd/#$HOME/\~}"
+    printf '%s\t%b  \033[1m%s\033[0m \033[90m▸\033[0m %s \033[90m▸\033[0m %s  \033[90m%s\033[0m%b\n' \
+      "$pid" "$icon" "$sess" "$wname" "$cmd" "${cwd/#$HOME/\~}" "$marker"
   done < <(cd_list_panes)
 }
 

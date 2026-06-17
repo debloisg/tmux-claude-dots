@@ -34,21 +34,23 @@ cd_icon_ansi() {
 cd_match() { cd_opt @claude_dots_command 'claude'; }
 
 # cd_list_panes — emit a tab-separated record per *Claude pane*:
-#   pane_id  session  window_index  window_name  command  cwd
+#   pane_id  session  window_index  window_name  command  cwd  active  inwin
 # A pane counts as Claude if its current command matches cd_match OR it already
-# has a state file (so a pane that backgrounded claude still shows). Output is
-# sorted by pane id for a stable left-to-right dot order.
+# has a state file (so a pane that backgrounded claude still shows).
+#   active = 1  the focused pane of an attached session (what you're typing in)
+#   inwin  = 1  any pane in the window currently displayed on an attached client
+# Output is sorted by pane id for a stable left-to-right dot order.
 cd_list_panes() {
   local tab=$'\t' state_dir re
   state_dir="$(cd_state_dir)"
   re="$(cd_match)"
   tmux list-panes -a -F \
-    "#{pane_id}${tab}#{pane_current_command}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_path}" \
+    "#{pane_id}${tab}#{pane_current_command}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_path}${tab}#{?#{&&:#{session_attached},#{&&:#{window_active},#{pane_active}}},1,0}${tab}#{?#{&&:#{session_attached},#{window_active}},1,0}" \
     2>/dev/null \
-  | while IFS=$'\t' read -r pid cmd sess widx wname cwd; do
+  | while IFS=$'\t' read -r pid cmd sess widx wname cwd active inwin; do
       [ -n "$pid" ] || continue
       if printf '%s' "$cmd" | grep -Eq "^(${re})$" || [ -f "$state_dir/${pid#%}" ]; then
-        printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd"
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd" "$active" "$inwin"
       fi
     done \
   | sort -t"$tab" -k1,1

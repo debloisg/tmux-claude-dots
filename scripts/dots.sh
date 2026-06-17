@@ -12,6 +12,7 @@ state_dir="$(cd_state_dir)"
 [ -d "$state_dir" ] || exit 0
 
 glyph="$(cd_opt @claude_dots_glyph '●')"
+glyph_active="$(cd_opt @claude_dots_glyph_active '◉')"
 sep="$(cd_opt @claude_dots_separator ' ')"
 c_work="$(cd_opt @claude_dots_color_working 'yellow')"
 c_wait="$(cd_opt @claude_dots_color_waiting 'red')"
@@ -35,7 +36,7 @@ map="$state_dir/.map"
 : > "$map"
 out=""
 i=0
-while IFS=$'\t' read -r pid _sess _widx _wname _cmd _cwd; do
+while IFS=$'\t' read -r pid _sess _widx _wname _cmd _cwd active inwin; do
   [ -n "$pid" ] || continue
   state="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
   case "$state" in
@@ -44,9 +45,18 @@ while IFS=$'\t' read -r pid _sess _widx _wname _cmd _cwd; do
     idle|done) col="$c_idle" ;;
     *)         col="$c_unk"  ;;   # detected pane, no hook event yet
   esac
+  # Emphasis: the pane you're typing in gets a distinct glyph + bold; the other
+  # panes in that same on-screen window get an underline; everything else plain.
+  if [ "$active" = "1" ]; then
+    g="$glyph_active"; emph="bold,"
+  elif [ "$inwin" = "1" ]; then
+    g="$glyph"; emph="underscore,"
+  else
+    g="$glyph"; emph=""
+  fi
   # index -> pane id, consumed by click.sh on MouseDown1Status
   printf '%s\t%s\n' "$i" "$pid" >> "$map"
-  out+="#[range=user|cd${i} fg=${col}]${glyph}#[norange default]${sep}"
+  out+="#[range=user|cd${i} ${emph}fg=${col}]${g}#[norange default]${sep}"
   i=$((i + 1))
 done < <(cd_list_panes)
 
