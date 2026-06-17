@@ -28,6 +28,32 @@ cd_icon_ansi() {
   esac
 }
 
+# cd_match — name(s) of the agent command to detect, as an extended-regex
+# anchored match against #{pane_current_command}. Override with
+# @claude_dots_command (e.g. 'claude|node') if your sessions report differently.
+cd_match() { cd_opt @claude_dots_command 'claude'; }
+
+# cd_list_panes — emit a tab-separated record per *Claude pane*:
+#   pane_id  session  window_index  window_name  command  cwd
+# A pane counts as Claude if its current command matches cd_match OR it already
+# has a state file (so a pane that backgrounded claude still shows). Output is
+# sorted by pane id for a stable left-to-right dot order.
+cd_list_panes() {
+  local tab=$'\t' state_dir re
+  state_dir="$(cd_state_dir)"
+  re="$(cd_match)"
+  tmux list-panes -a -F \
+    "#{pane_id}${tab}#{pane_current_command}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_path}" \
+    2>/dev/null \
+  | while IFS=$'\t' read -r pid cmd sess widx wname cwd; do
+      [ -n "$pid" ] || continue
+      if printf '%s' "$cmd" | grep -Eq "^(${re})$" || [ -f "$state_dir/${pid#%}" ]; then
+        printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd"
+      fi
+    done \
+  | sort -t"$tab" -k1,1
+}
+
 # cd_switch PANE_ID [CLIENT] — teleport CLIENT (or the current client) to the
 # session/window/pane that owns PANE_ID. Passing the client is essential when
 # called from inside a display-popup, which runs in its own popup client.

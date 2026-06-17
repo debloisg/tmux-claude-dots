@@ -13,18 +13,14 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 state_dir="$(cd_state_dir)"
 
 emit_rows() {
-  local tab=$'\t'
-  local pid sess widx wname cmd cwd key st icon
+  local pid sess widx wname cmd cwd st icon
   while IFS=$'\t' read -r pid sess widx wname cmd cwd; do
-    key="${pid#%}"
-    [ -f "$state_dir/$key" ] || continue          # only Claude panes
-    st="$(cat "$state_dir/$key" 2>/dev/null)"
+    st="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
     icon="$(cd_icon_ansi "$st")"
     # Field 1 (hidden) = pane id target. Display starts at field 2.
     printf '%s\t%b  \033[1m%s\033[0m \033[90m▸\033[0m %s \033[90m▸\033[0m %s  \033[90m%s\033[0m\n' \
       "$pid" "$icon" "$sess" "$wname" "$cmd" "${cwd/#$HOME/\~}"
-  done < <(tmux list-panes -a -F \
-    "#{pane_id}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_command}${tab}#{pane_current_path}" 2>/dev/null)
+  done < <(cd_list_panes)
 }
 
 # Row-only mode for fzf reload() bindings.
