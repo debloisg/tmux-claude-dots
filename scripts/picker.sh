@@ -18,7 +18,7 @@ emit_rows() {
   while IFS=$'\t' read -r pid sess widx wname cmd cwd; do
     key="${pid#%}"
     [ -f "$state_dir/$key" ] || continue          # only Claude panes
-    read -r st < "$state_dir/$key" 2>/dev/null || st=""
+    st="$(cat "$state_dir/$key" 2>/dev/null)"
     icon="$(cd_icon_ansi "$st")"
     # Field 1 (hidden) = pane id target. Display starts at field 2.
     printf '%s\t%b  \033[1m%s\033[0m \033[90m▸\033[0m %s \033[90m▸\033[0m %s  \033[90m%s\033[0m\n' \

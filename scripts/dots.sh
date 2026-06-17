@@ -34,7 +34,7 @@ for f in "$state_dir"/*; do
   base="${f##*/}"
   # Reap state files whose pane is gone (covers crashes that skip SessionEnd).
   if [ -z "${live[$base]:-}" ]; then rm -f "$f"; continue; fi
-  read -r state < "$f" 2>/dev/null || state=""
+  state="$(cat "$f" 2>/dev/null)"
   case "$state" in
     working)   col="$c_work" ;;
     waiting)   col="$c_wait" ;;
