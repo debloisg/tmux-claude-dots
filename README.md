@@ -114,7 +114,9 @@ All options are global tmux user options — set them **before** the plugin load
 |--------|---------|-------------|
 | `@claude_dots_key` | `G` | `prefix + <key>` to open the picker |
 | `@claude_dots_glyph` | `●` | the status-bar glyph |
+| `@claude_dots_glyph_active` | `◉` | glyph for the pane you're currently in |
 | `@claude_dots_separator` | `' '` | string between dots |
+| `@claude_dots_command` | `claude` | extended-regex of `pane_current_command`(s) treated as a Claude session |
 | `@claude_dots_color_working` | `yellow` | busy |
 | `@claude_dots_color_waiting` | `red` | waiting for input/permission |
 | `@claude_dots_color_idle` | `green` | turn finished |
