@@ -12,17 +12,59 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 state_dir="$(cd_state_dir)"
 
+# State priority for the aggregate icon on a session line (most urgent wins).
+cd_prio() {
+  case "$1" in waiting) echo 3 ;; working) echo 2 ;; idle|done) echo 1 ;; *) echo 0 ;; esac
+}
+
+# Tree: each session is a parent line; its Claude panes nest underneath, named
+# by their working directory. Field 1 (hidden, before the tab) is the pane id
+# target; a session line targets its first pane.
 emit_rows() {
-  local pid sess widx wname cmd cwd active inwin st icon marker
-  while IFS=$'\t' read -r pid sess widx wname cmd cwd active inwin; do
+  local pid sess cwd active st
+  local -a R_pid=() R_sess=() R_cwd=() R_state=() R_active=()
+  while IFS=$'\t' read -r pid sess _widx _wname _cmd cwd active _inwin; do
+    [ -n "$pid" ] || continue
     st="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
-    icon="$(cd_icon_ansi "$st")"
-    marker=""
-    [ "$active" = "1" ] && marker=$'  \033[1;36m← here\033[0m'
-    # Field 1 (hidden) = pane id target. Display starts at field 2.
-    printf '%s\t%b  \033[1m%s\033[0m \033[90m▸\033[0m %s \033[90m▸\033[0m %s  \033[90m%s\033[0m%b\n' \
-      "$pid" "$icon" "$sess" "$wname" "$cmd" "${cwd/#$HOME/\~}" "$marker"
+    R_pid+=("$pid"); R_sess+=("$sess"); R_cwd+=("$cwd"); R_state+=("$st"); R_active+=("$active")
   done < <(cd_list_panes)
+
+  local n=${#R_pid[@]}
+  [ "$n" -eq 0 ] && return 0
+
+  # Unique sessions, first-seen order.
+  local -a sorder=(); local -A seen=(); local i s
+  for ((i = 0; i < n; i++)); do
+    s="${R_sess[i]}"
+    [ -n "${seen[$s]:-}" ] || { seen[$s]=1; sorder+=("$s"); }
+  done
+
+  local j p agg aggp sicon picon label mark c last m
+  for s in "${sorder[@]}"; do
+    local -a idx=()
+    for ((i = 0; i < n; i++)); do [ "${R_sess[i]}" = "$s" ] && idx+=("$i"); done
+
+    # Aggregate (most urgent) state for the session line.
+    agg=""; aggp=-1
+    for j in "${idx[@]}"; do
+      p=$(cd_prio "${R_state[j]}")
+      [ "$p" -gt "$aggp" ] && { aggp=$p; agg="${R_state[j]}"; }
+    done
+    sicon="$(cd_icon_ansi "$agg")"
+    printf '%s\t%b \033[1m%s\033[0m \033[90m(%d)\033[0m\n' \
+      "${R_pid[${idx[0]}]}" "$sicon" "$s" "${#idx[@]}"
+
+    # Pane children, named by cwd.
+    last=$(( ${#idx[@]} - 1 )); m=0
+    for j in "${idx[@]}"; do
+      if [ "$m" -eq "$last" ]; then c="└─"; else c="├─"; fi
+      picon="$(cd_icon_ansi "${R_state[j]}")"
+      label="${R_cwd[j]/#$HOME/\~}"
+      mark=""; [ "${R_active[j]}" = "1" ] && mark=$'  \033[1;36m←\033[0m'
+      printf '%s\t  \033[90m%s\033[0m %b %s%b\n' "${R_pid[j]}" "$c" "$picon" "$label" "$mark"
+      m=$(( m + 1 ))
+    done
+  done
 }
 
 # Row-only mode for fzf reload() bindings.
