@@ -36,15 +36,15 @@ case "$event" in
     esac
     ;;
   Stop)
-    # A turn that ends with background tasks still running isn't really idle.
+    # A turn that ends with background tasks still running isn't really finished.
     if command -v jq >/dev/null 2>&1; then
       n="$(jq '((.background_tasks // []) | length)' 2>/dev/null)"
       case "${n:-0}" in
-        ''|0) printf 'idle'    > "$f" ;;
+        ''|0) printf 'done'    > "$f" ;;   # turn finished
         *)    printf 'working' > "$f" ;;
       esac
     else
-      printf 'idle' > "$f"
+      printf 'done' > "$f"
     fi
     ;;
   SessionEnd)

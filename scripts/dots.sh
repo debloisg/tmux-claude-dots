@@ -16,7 +16,8 @@ glyph_active="$(cd_opt @claude_dots_glyph_active '◉')"
 sep="$(cd_opt @claude_dots_separator ' ')"
 gsep="$(cd_opt @claude_dots_group_separator '│')"
 gsep_col="$(cd_opt @claude_dots_group_separator_color 'colour240')"
-c_work="$(cd_opt @claude_dots_color_working 'yellow')"
+c_work="$(cd_opt @claude_dots_color_working 'blue')"
+c_done="$(cd_opt @claude_dots_color_done 'colour208')"
 c_wait="$(cd_opt @claude_dots_color_waiting 'red')"
 c_idle="$(cd_opt @claude_dots_color_idle 'green')"
 c_unk="$(cd_opt  @claude_dots_color_unknown 'colour240')"
@@ -66,8 +67,9 @@ for s in "${sorder[@]}"; do
     state="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
     case "$state" in
       working)   col="$c_work" ;;
+      done)      col="$c_done" ;;
       waiting)   col="$c_wait" ;;
-      idle|done) col="$c_idle" ;;
+      idle)      col="$c_idle" ;;
       *)         col="$c_unk"  ;;   # detected pane, no hook event yet
     esac
     # Emphasis: the pane you're typing in gets a distinct glyph + bold; other
@@ -80,7 +82,9 @@ for s in "${sorder[@]}"; do
       g="$glyph"; emph=""
     fi
     printf '%s\t%s\n' "$i" "$pid" >> "$map"   # index -> pane id, used by click.sh
-    out+="#[range=user|cd${i} ${emph}fg=${col}]${g}#[norange default]${sep}"
+    # range and color in SEPARATE blocks so the fg always wins over the theme's
+    # default status style (Catppuccin resets color if they share one #[...]).
+    out+="#[range=user|cd${i}]#[${emph}fg=${col}]${g}#[default]#[norange]${sep}"
     i=$((i + 1))
   done
 done

@@ -21,10 +21,11 @@ cd_state_dir() {
 # cd_icon_ansi STATE — colored glyph for fzf rows (needs fzf --ansi).
 cd_icon_ansi() {
   case "$1" in
-    working)   printf '\033[1;33m●\033[0m' ;; # yellow ●
-    waiting)   printf '\033[1;31m●\033[0m' ;; # red ●
-    idle|done) printf '\033[1;32m●\033[0m' ;; # green ●
-    *)         printf '\033[90m○\033[0m'   ;; # grey ○
+    working) printf '\033[1;34m●\033[0m'    ;; # blue ●
+    done)    printf '\033[38;5;208m●\033[0m';; # orange ●
+    waiting) printf '\033[1;31m●\033[0m'    ;; # red ●
+    idle)    printf '\033[1;32m●\033[0m'    ;; # green ●
+    *)       printf '\033[90m○\033[0m'      ;; # grey ○
   esac
 }
 
