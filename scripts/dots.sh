@@ -14,6 +14,8 @@ state_dir="$(cd_state_dir)"
 glyph="$(cd_opt @claude_dots_glyph '●')"
 glyph_active="$(cd_opt @claude_dots_glyph_active '◉')"
 sep="$(cd_opt @claude_dots_separator ' ')"
+gsep="$(cd_opt @claude_dots_group_separator '│')"
+gsep_col="$(cd_opt @claude_dots_group_separator_color 'colour240')"
 c_work="$(cd_opt @claude_dots_color_working 'yellow')"
 c_wait="$(cd_opt @claude_dots_color_waiting 'red')"
 c_idle="$(cd_opt @claude_dots_color_idle 'green')"
@@ -31,33 +33,56 @@ for f in "$state_dir"/*; do
   [ -z "${live[$base]:-}" ] && rm -f "$f"
 done
 
-# One dot per live Claude pane (whether or not it has reported state yet).
+# Read all Claude panes, then group dots by session with a separator between
+# groups. (cd_list_panes is sorted by pane id, so panes stay ordered within a
+# session; sessions appear in first-seen order.)
+declare -a R_pid=() R_sess=() R_active=() R_inwin=()
+while IFS=$'\t' read -r pid sess _widx _wname _cmd _cwd active inwin; do
+  [ -n "$pid" ] || continue
+  R_pid+=("$pid"); R_sess+=("$sess"); R_active+=("$active"); R_inwin+=("$inwin")
+done < <(cd_list_panes)
+
+n=${#R_pid[@]}
 map="$state_dir/.map"
 : > "$map"
+[ "$n" -eq 0 ] && exit 0
+
+# Sessions in first-seen order.
+declare -a sorder=(); declare -A seen=()
+for ((k = 0; k < n; k++)); do
+  s="${R_sess[k]}"
+  [ -n "${seen[$s]:-}" ] || { seen[$s]=1; sorder+=("$s"); }
+done
+
 out=""
 i=0
-while IFS=$'\t' read -r pid _sess _widx _wname _cmd _cwd active inwin; do
-  [ -n "$pid" ] || continue
-  state="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
-  case "$state" in
-    working)   col="$c_work" ;;
-    waiting)   col="$c_wait" ;;
-    idle|done) col="$c_idle" ;;
-    *)         col="$c_unk"  ;;   # detected pane, no hook event yet
-  esac
-  # Emphasis: the pane you're typing in gets a distinct glyph + bold; the other
-  # panes in that same on-screen window get an underline; everything else plain.
-  if [ "$active" = "1" ]; then
-    g="$glyph_active"; emph="bold,"
-  elif [ "$inwin" = "1" ]; then
-    g="$glyph"; emph="underscore,"
-  else
-    g="$glyph"; emph=""
-  fi
-  # index -> pane id, consumed by click.sh on MouseDown1Status
-  printf '%s\t%s\n' "$i" "$pid" >> "$map"
-  out+="#[range=user|cd${i} ${emph}fg=${col}]${g}#[norange default]${sep}"
-  i=$((i + 1))
-done < <(cd_list_panes)
+first=1
+for s in "${sorder[@]}"; do
+  [ "$first" -eq 0 ] && out+=" #[fg=${gsep_col}]${gsep}#[default] "
+  first=0
+  for ((k = 0; k < n; k++)); do
+    [ "${R_sess[k]}" = "$s" ] || continue
+    pid="${R_pid[k]}"
+    state="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
+    case "$state" in
+      working)   col="$c_work" ;;
+      waiting)   col="$c_wait" ;;
+      idle|done) col="$c_idle" ;;
+      *)         col="$c_unk"  ;;   # detected pane, no hook event yet
+    esac
+    # Emphasis: the pane you're typing in gets a distinct glyph + bold; other
+    # panes in that same on-screen window get an underline; rest plain.
+    if [ "${R_active[k]}" = "1" ]; then
+      g="$glyph_active"; emph="bold,"
+    elif [ "${R_inwin[k]}" = "1" ]; then
+      g="$glyph"; emph="underscore,"
+    else
+      g="$glyph"; emph=""
+    fi
+    printf '%s\t%s\n' "$i" "$pid" >> "$map"   # index -> pane id, used by click.sh
+    out+="#[range=user|cd${i} ${emph}fg=${col}]${g}#[norange default]${sep}"
+    i=$((i + 1))
+  done
+done
 
 printf '%s' "$out"
