@@ -63,21 +63,26 @@ cd_match() { cd_opt @claude_dots_command 'claude'; }
 #   active = 1  the focused pane of an attached session (what you're typing in)
 #   inwin  = 1  any pane in the window currently displayed on an attached client
 # Sorted by session name (to match tmux's alphabetical session switcher), then
-# by pane number within a session, for a stable, intuitive left-to-right order.
+# window index, then pane position (left-to-right, top-to-bottom) — so dots read
+# the way you scan a screen: window 1's left pane, its right pane, window 2, ...
 cd_list_panes() {
   local tab=$'\t' state_dir re
   state_dir="$(cd_state_dir)"
   re="$(cd_match)"
+  # Trailing pane_left/pane_top columns drive the sort, then are dropped so the
+  # emitted record keeps its documented 8-field shape.
   tmux list-panes -a -F \
-    "#{pane_id}${tab}#{pane_current_command}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_path}${tab}#{?#{&&:#{session_attached},#{&&:#{window_active},#{pane_active}}},1,0}${tab}#{?#{&&:#{session_attached},#{window_active}},1,0}" \
+    "#{pane_id}${tab}#{pane_current_command}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_path}${tab}#{?#{&&:#{session_attached},#{&&:#{window_active},#{pane_active}}},1,0}${tab}#{?#{&&:#{session_attached},#{window_active}},1,0}${tab}#{pane_left}${tab}#{pane_top}" \
     2>/dev/null \
-  | while IFS=$'\t' read -r pid cmd sess widx wname cwd active inwin || [ -n "$pid" ]; do
+  | while IFS=$'\t' read -r pid cmd sess widx wname cwd active inwin pleft ptop || [ -n "$pid" ]; do
       [ -n "$pid" ] || continue
       if printf '%s' "$cmd" | grep -Eq "^(${re})$" || [ -f "$state_dir/${pid#%}" ]; then
-        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd" "$active" "$inwin"
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+          "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd" "$active" "$inwin" "$pleft" "$ptop"
       fi
     done \
-  | sort -t"$tab" -k2,2 -k1.2,1n
+  | sort -t"$tab" -k2,2 -k3,3n -k9,9n -k10,10n \
+  | cut -d"$tab" -f1-8
 }
 
 # cd_switch PANE_ID [CLIENT] — teleport CLIENT (or the current client) to the

@@ -36,8 +36,8 @@ for f in "$state_dir"/*; do
 done
 
 # Read all Claude panes, then group dots by session with a separator between
-# groups. (cd_list_panes is sorted by session name, so sessions appear in the
-# same alphabetical order as tmux's session switcher.)
+# groups. (cd_list_panes is sorted by session name — matching tmux's session
+# switcher — then window index and on-screen pane position within a session.)
 declare -a R_pid=() R_sess=() R_active=() R_inwin=()
 while IFS=$'\t' read -r pid sess _widx _wname _cmd _cwd active inwin; do
   [ -n "$pid" ] || continue

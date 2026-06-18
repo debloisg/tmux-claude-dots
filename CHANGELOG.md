@@ -21,7 +21,9 @@ follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Dots are ordered by session name (matching tmux's alphabetical session
-  switcher) instead of pane launch order.
+  switcher), then by window index and on-screen pane position within a session
+  (window 1's left pane, its right pane, window 2, ...), instead of pane launch
+  order.
 - A finished turn stays **green** until you switch into the pane, then greys to
   idle ("seen") — instead of dropping to gray as soon as Claude went idle.
 - Separator spacing is uniform; the dot strip keeps an even gap from the next
