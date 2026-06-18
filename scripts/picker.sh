@@ -59,7 +59,11 @@ emit_rows() {
     for j in "${idx[@]}"; do
       if [ "$m" -eq "$last" ]; then c="└─"; else c="├─"; fi
       picon="$(cd_icon_ansi "${R_state[j]}")"
-      label="${R_cwd[j]/#$HOME/\~}"
+      # Name the instance by the current dir and its parent only.
+      full="${R_cwd[j]}"
+      base="${full##*/}"
+      parent="${full%/*}"; parent="${parent##*/}"
+      if [ -n "$base" ]; then label="${parent:+$parent/}$base"; else label="$full"; fi
       mark=""; [ "${R_active[j]}" = "1" ] && mark=$'  \033[1;36m←\033[0m'
       printf '%s\t  \033[90m%s\033[0m %b %s%b\n' "${R_pid[j]}" "$c" "$picon" "$label" "$mark"
       m=$(( m + 1 ))
