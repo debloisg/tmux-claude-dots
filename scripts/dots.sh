@@ -97,4 +97,6 @@ for s in "${sorder[@]}"; do
   done
 done
 
-printf '%s' "$out"
+# Trailing separator so the last dot keeps an even gap from whatever module
+# follows in status-right (e.g. a theme's session capsule).
+printf '%s%s' "$out" "$sep"
