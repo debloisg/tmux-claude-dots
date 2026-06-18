@@ -25,7 +25,7 @@ emit_rows() {
   local -a R_pid=() R_sess=() R_widx=() R_cwd=() R_state=() R_active=() R_inwin=()
   while IFS=$'\t' read -r pid sess widx _wname _cmd cwd active inwin; do
     [ -n "$pid" ] || continue
-    st="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
+    st="$(cd_read "$state_dir/${pid#%}")"
     R_pid+=("$pid"); R_sess+=("$sess"); R_widx+=("$widx"); R_cwd+=("$cwd")
     R_state+=("$st"); R_active+=("$active"); R_inwin+=("$inwin")
   done < <(cd_list_panes)

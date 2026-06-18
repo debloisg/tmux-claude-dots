@@ -25,7 +25,7 @@ c_unk="$(cd_opt  @claude_dots_color_unknown 'colour240')"
 
 # Reap state files for panes that no longer exist (crash without SessionEnd).
 declare -A live=()
-while IFS= read -r pid; do
+while IFS= read -r pid || [ -n "$pid" ]; do
   [ -n "$pid" ] && live["${pid#%}"]=1
 done < <(tmux list-panes -a -F '#{pane_id}' 2>/dev/null)
 for f in "$state_dir"/*; do
@@ -65,7 +65,7 @@ for s in "${sorder[@]}"; do
   for ((k = 0; k < n; k++)); do
     [ "${R_sess[k]}" = "$s" ] || continue
     pid="${R_pid[k]}"
-    state="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
+    state="$(cd_read "$state_dir/${pid#%}")"
     # Unknown panes (no hook event yet) use a hollow circle; known states fill.
     case "$state" in
       working) col="$c_work"; base="$glyph" ;;

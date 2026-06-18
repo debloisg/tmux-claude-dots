@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Shared helpers for tmux-claude-dots.
-# Sourced by dots.sh, click.sh and picker.sh.
+# Shared helpers for tmux-claude-dots, sourced by dots.sh, click.sh, picker.sh
+# and the entry script. This file only defines functions — it never changes
+# shell options or has side effects, so sourcing it is safe.
+# shellcheck shell=bash
 
 # cd_opt OPTION DEFAULT — read a global tmux user option, fall back to DEFAULT.
 cd_opt() {
@@ -16,6 +18,15 @@ cd_state_dir() {
   d="$(tmux show-option -gqv @claude_dots_dir 2>/dev/null)"
   [ -n "$d" ] || d="${TMPDIR:-/tmp}/claude-dots"
   printf '%s' "$d"
+}
+
+# cd_read FILE — print FILE's contents (empty if missing), without forking cat
+# and without dropping a final line that lacks a trailing newline (our state
+# files are written with `printf` and have none).
+cd_read() {
+  local s=""
+  [ -f "$1" ] && IFS= read -r s < "$1"
+  printf '%s' "$s"
 }
 
 # cd_icon_ansi STATE — colored glyph for fzf rows (needs fzf --ansi).
@@ -59,7 +70,7 @@ cd_list_panes() {
   tmux list-panes -a -F \
     "#{pane_id}${tab}#{pane_current_command}${tab}#{session_name}${tab}#{window_index}${tab}#{window_name}${tab}#{pane_current_path}${tab}#{?#{&&:#{session_attached},#{&&:#{window_active},#{pane_active}}},1,0}${tab}#{?#{&&:#{session_attached},#{window_active}},1,0}" \
     2>/dev/null \
-  | while IFS=$'\t' read -r pid cmd sess widx wname cwd active inwin; do
+  | while IFS=$'\t' read -r pid cmd sess widx wname cwd active inwin || [ -n "$pid" ]; do
       [ -n "$pid" ] || continue
       if printf '%s' "$cmd" | grep -Eq "^(${re})$" || [ -f "$state_dir/${pid#%}" ]; then
         printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd" "$active" "$inwin"

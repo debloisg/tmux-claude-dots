@@ -1,0 +1,4 @@
+# Scripts are bash (arrays, [[, process substitution); lib.sh has no shebang.
+shell=bash
+# Follow `source`/`.` into scripts/lib.sh when linting.
+external-sources=true

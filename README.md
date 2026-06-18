@@ -18,11 +18,14 @@ A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/c
 | Need | Why | Minimum |
 |------|-----|---------|
 | **tmux** | clickable status ranges (`#{mouse_status_range}`) | **3.4+** |
+| **bash** | the scripts use associative arrays | **4.0+** (macOS: `brew install bash`) |
 | **fzf** | the `prefix + G` picker (dots/clicks work without it) | any recent |
-| **jq** | optional — only to keep a session "working" while background tasks run | optional |
+| **jq** | classify Notification (permission → red) and background tasks | recommended |
 | **mouse** | `set -g mouse on` — required for click-to-switch | — |
 
-A Nerd Font isn't required; the default glyph is a plain Unicode `●`.
+The status-bar dots use a plain Unicode `●`/`○`, so no special font is needed.
+A **Nerd Font** is only used for the rounded window-number pills in the picker;
+without one the pill caps render as boxes (cosmetic only).
 
 ---
 
@@ -34,7 +37,10 @@ A Nerd Font isn't required; the default glyph is a plain Unicode `●`.
 set -g @plugin 'YOUR_GH_USER/tmux-claude-dots'
 ```
 
-Then `prefix + I` to fetch it.
+Then `prefix + I` to fetch it. Pin a release with `...tmux-claude-dots#v0.1.0`.
+
+If you use a status-line theme (e.g. Catppuccin), list this plugin **after** it
+so the dots aren't overwritten when the theme sets `status-right`.
 
 ### Manual
 
