@@ -12,7 +12,7 @@ state_dir="$(cd_state_dir)"
 [ -d "$state_dir" ] || exit 0
 
 glyph="$(cd_opt @claude_dots_glyph '●')"
-glyph_active="$(cd_opt @claude_dots_glyph_active '◉')"
+glyph_active="$(cd_opt @claude_dots_glyph_active '⬤')"
 sep="$(cd_opt @claude_dots_separator ' ')"
 gsep="$(cd_opt @claude_dots_group_separator '│')"
 gsep_col="$(cd_opt @claude_dots_group_separator_color 'colour240')"
@@ -75,7 +75,7 @@ for s in "${sorder[@]}"; do
     # Emphasis: the pane you're typing in gets a distinct glyph + bold; other
     # panes in that same on-screen window get an underline; rest plain.
     if [ "${R_active[k]}" = "1" ]; then
-      g="$glyph_active"; emph="bold,"
+      g="$glyph_active"; emph="bold,underscore,"
     elif [ "${R_inwin[k]}" = "1" ]; then
       g="$glyph"; emph="underscore,"
     else

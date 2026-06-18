@@ -114,7 +114,7 @@ All options are global tmux user options — set them **before** the plugin load
 |--------|---------|-------------|
 | `@claude_dots_key` | `G` | `prefix + <key>` to open the picker |
 | `@claude_dots_glyph` | `●` | the status-bar glyph |
-| `@claude_dots_glyph_active` | `◉` | glyph for the pane you're currently in |
+| `@claude_dots_glyph_active` | `⬤` | (larger) glyph for the pane you're currently in; also bold + underlined |
 | `@claude_dots_separator` | `' '` | string between dots within a session |
 | `@claude_dots_group_separator` | `│` | separator drawn between session groups |
 | `@claude_dots_group_separator_color` | `colour240` | color of the group separator |
