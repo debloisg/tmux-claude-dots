@@ -2,7 +2,7 @@
 
 A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/claude-code) session running in your tmux server — rendered as small colored dots in the status bar, one per session.
 
-- 🔵 **working** · 🟠 **just finished** · 🔴 **needs you** (permission) · 🟢 **idle**
+- 🔵 **working** · 🟠 **needs you** (permission) · 🟢 **finished** · ⚪ **idle** · ○ **unknown**
 - **Click a dot** to jump straight to that pane.
 - **`prefix + G`** opens an `fzf` picker with rich rows + a live preview of each session, and switches on Enter.
 - **No polling daemon.** State is pushed by Claude Code hooks, which nudge tmux to repaint instantly — so the bar updates the moment a session changes, with zero idle CPU and no flicker.
@@ -113,17 +113,18 @@ All options are global tmux user options — set them **before** the plugin load
 | Option | Default | Description |
 |--------|---------|-------------|
 | `@claude_dots_key` | `G` | `prefix + <key>` to open the picker |
-| `@claude_dots_glyph` | `●` | the status-bar glyph |
+| `@claude_dots_glyph` | `●` | filled glyph for known states |
+| `@claude_dots_glyph_unknown` | `○` | hollow glyph for panes with no event yet |
 | `@claude_dots_glyph_active` | `⬤` | (larger) glyph for the pane you're currently in; also bold + underlined |
 | `@claude_dots_separator` | `' '` | string between dots within a session |
 | `@claude_dots_group_separator` | `│` | separator drawn between session groups |
 | `@claude_dots_group_separator_color` | `colour240` | color of the group separator |
 | `@claude_dots_command` | `claude` | extended-regex of `pane_current_command`(s) treated as a Claude session |
 | `@claude_dots_color_working` | `blue` | busy |
-| `@claude_dots_color_done` | `colour208` | turn just finished |
-| `@claude_dots_color_waiting` | `red` | blocked on you (permission) |
-| `@claude_dots_color_idle` | `green` | idle / awaiting next prompt |
-| `@claude_dots_color_unknown` | `colour240` | unknown / no event yet |
+| `@claude_dots_color_waiting` | `colour208` | blocked on you (permission) — orange |
+| `@claude_dots_color_done` | `green` | turn just finished |
+| `@claude_dots_color_idle` | `colour245` | idle / awaiting next prompt — gray |
+| `@claude_dots_color_unknown` | `colour240` | no event yet — gray hollow ○ |
 | `@claude_dots_auto_status` | `on` | auto-prepend the renderer to `status-right`; set `off` to place it yourself |
 | `@claude_dots_popup_width` | `80%` | picker popup width |
 | `@claude_dots_popup_height` | `70%` | picker popup height |

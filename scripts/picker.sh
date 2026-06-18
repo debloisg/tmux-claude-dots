@@ -21,12 +21,13 @@ cd_prio() {
 # by their working directory. Field 1 (hidden, before the tab) is the pane id
 # target; a session line targets its first pane.
 emit_rows() {
-  local pid sess cwd active st
-  local -a R_pid=() R_sess=() R_cwd=() R_state=() R_active=()
-  while IFS=$'\t' read -r pid sess _widx _wname _cmd cwd active _inwin; do
+  local pid sess widx cwd active inwin st
+  local -a R_pid=() R_sess=() R_widx=() R_cwd=() R_state=() R_active=() R_inwin=()
+  while IFS=$'\t' read -r pid sess widx _wname _cmd cwd active inwin; do
     [ -n "$pid" ] || continue
     st="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
-    R_pid+=("$pid"); R_sess+=("$sess"); R_cwd+=("$cwd"); R_state+=("$st"); R_active+=("$active")
+    R_pid+=("$pid"); R_sess+=("$sess"); R_widx+=("$widx"); R_cwd+=("$cwd")
+    R_state+=("$st"); R_active+=("$active"); R_inwin+=("$inwin")
   done < <(cd_list_panes)
 
   local n=${#R_pid[@]}
@@ -39,7 +40,7 @@ emit_rows() {
     [ -n "${seen[$s]:-}" ] || { seen[$s]=1; sorder+=("$s"); }
   done
 
-  local j p agg aggp sicon picon label mark c last m
+  local j p agg aggp sicon picon label mark c last m pill full base parent
   for s in "${sorder[@]}"; do
     local -a idx=()
     for ((i = 0; i < n; i++)); do [ "${R_sess[i]}" = "$s" ] && idx+=("$i"); done
@@ -65,7 +66,8 @@ emit_rows() {
       parent="${full%/*}"; parent="${parent##*/}"
       if [ -n "$base" ]; then label="${parent:+$parent/}$base"; else label="$full"; fi
       mark=""; [ "${R_active[j]}" = "1" ] && mark=$'  \033[1;36m←\033[0m'
-      printf '%s\t  \033[90m%s\033[0m %b %s%b\n' "${R_pid[j]}" "$c" "$picon" "$label" "$mark"
+      pill="$(cd_tab_pill "${R_widx[j]}" "${R_inwin[j]}")"
+      printf '%s\t  \033[90m%s\033[0m %b %b %s%b\n' "${R_pid[j]}" "$c" "$pill" "$picon" "$label" "$mark"
       m=$(( m + 1 ))
     done
   done
@@ -109,7 +111,7 @@ sel="$(printf '%s\n' "$rows" | fzf \
   --prompt='claude ❯ ' \
   --header="${legend}"$'\n'"${keys}" \
   --header-first \
-  --preview 'tmux capture-pane -ep -S -200 -t {1}' \
+  --preview 'tmux capture-pane -ep -t {1}' \
   --preview-window 'right:55%:wrap' \
   --bind "ctrl-x:execute-silent(tmux kill-pane -t {1})+reload($reload)" \
   --bind "ctrl-r:reload($reload)")" || exit 0

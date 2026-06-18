@@ -22,11 +22,22 @@ cd_state_dir() {
 cd_icon_ansi() {
   case "$1" in
     working) printf '\033[1;34m●\033[0m'    ;; # blue ●
-    done)    printf '\033[38;5;208m●\033[0m';; # orange ●
-    waiting) printf '\033[1;31m●\033[0m'    ;; # red ●
-    idle)    printf '\033[1;32m●\033[0m'    ;; # green ●
-    *)       printf '\033[90m○\033[0m'      ;; # grey ○
+    waiting) printf '\033[38;5;208m●\033[0m';; # orange ● (needs you)
+    done)    printf '\033[1;32m●\033[0m'    ;; # green ● (finished)
+    idle)    printf '\033[38;5;245m●\033[0m';; # gray ● (idle)
+    *)       printf '\033[38;5;240m○\033[0m';; # gray ○ (unknown, hollow)
   esac
+}
+
+# cd_tab_pill NUMBER CURRENT — a rounded "tab number" pill for fzf rows, styled
+# like the Catppuccin window tabs: dark digit (crust #11111b) on a colored pill
+# (mauve #cba6f7 for the currently displayed window, overlay #9399b2 otherwise)
+# with rounded Nerd Font powerline caps (U+E0B6 left, U+E0B4 right).
+cd_tab_pill() {
+  local num="$1" current="$2" rgb
+  if [ "$current" = "1" ]; then rgb='203;166;247'; else rgb='147;153;178'; fi
+  printf '\033[38;2;%sm\033[48;2;%sm\033[38;2;17;17;27m%s\033[0m\033[38;2;%sm\033[0m' \
+    "$rgb" "$rgb" "$num" "$rgb"
 }
 
 # cd_match — name(s) of the agent command to detect, as an extended-regex

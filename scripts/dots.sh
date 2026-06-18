@@ -12,14 +12,15 @@ state_dir="$(cd_state_dir)"
 [ -d "$state_dir" ] || exit 0
 
 glyph="$(cd_opt @claude_dots_glyph '●')"
+glyph_unknown="$(cd_opt @claude_dots_glyph_unknown '○')"
 glyph_active="$(cd_opt @claude_dots_glyph_active '⬤')"
 sep="$(cd_opt @claude_dots_separator ' ')"
 gsep="$(cd_opt @claude_dots_group_separator '│')"
 gsep_col="$(cd_opt @claude_dots_group_separator_color 'colour240')"
 c_work="$(cd_opt @claude_dots_color_working 'blue')"
-c_done="$(cd_opt @claude_dots_color_done 'colour208')"
-c_wait="$(cd_opt @claude_dots_color_waiting 'red')"
-c_idle="$(cd_opt @claude_dots_color_idle 'green')"
+c_wait="$(cd_opt @claude_dots_color_waiting 'colour208')"
+c_done="$(cd_opt @claude_dots_color_done 'green')"
+c_idle="$(cd_opt @claude_dots_color_idle 'colour245')"
 c_unk="$(cd_opt  @claude_dots_color_unknown 'colour240')"
 
 # Reap state files for panes that no longer exist (crash without SessionEnd).
@@ -65,21 +66,22 @@ for s in "${sorder[@]}"; do
     [ "${R_sess[k]}" = "$s" ] || continue
     pid="${R_pid[k]}"
     state="$(cat "$state_dir/${pid#%}" 2>/dev/null)"
+    # Unknown panes (no hook event yet) use a hollow circle; known states fill.
     case "$state" in
-      working)   col="$c_work" ;;
-      done)      col="$c_done" ;;
-      waiting)   col="$c_wait" ;;
-      idle)      col="$c_idle" ;;
-      *)         col="$c_unk"  ;;   # detected pane, no hook event yet
+      working) col="$c_work"; base="$glyph" ;;
+      waiting) col="$c_wait"; base="$glyph" ;;
+      done)    col="$c_done"; base="$glyph" ;;
+      idle)    col="$c_idle"; base="$glyph" ;;
+      *)       col="$c_unk";  base="$glyph_unknown" ;;
     esac
-    # Emphasis: the pane you're typing in gets a distinct glyph + bold; other
-    # panes in that same on-screen window get an underline; rest plain.
+    # Emphasis: the pane you're typing in gets a larger glyph + bold/underline;
+    # other panes in that same on-screen window get an underline; rest plain.
     if [ "${R_active[k]}" = "1" ]; then
       g="$glyph_active"; emph="bold,underscore,"
     elif [ "${R_inwin[k]}" = "1" ]; then
-      g="$glyph"; emph="underscore,"
+      g="$base"; emph="underscore,"
     else
-      g="$glyph"; emph=""
+      g="$base"; emph=""
     fi
     printf '%s\t%s\n' "$i" "$pid" >> "$map"   # index -> pane id, used by click.sh
     # range and color in SEPARATE blocks so the fg always wins over the theme's
