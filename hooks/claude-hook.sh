@@ -23,7 +23,17 @@ case "$event" in
     printf 'working' > "$f"
     ;;
   Notification)
-    printf 'waiting' > "$f"
+    # Claude fires Notification both when it needs permission (truly blocked,
+    # show red) and when it has simply gone idle waiting for your next prompt
+    # (a finished turn — keep that green, not red). Tell them apart by message.
+    msg=""
+    command -v jq >/dev/null 2>&1 && msg="$(jq -r '.message // empty' 2>/dev/null)"
+    case "$msg" in
+      *[Pp]ermission*|*[Aa]pprove*|*[Aa]llow*|*[Cc]onfirm*)
+        printf 'waiting' > "$f" ;;   # blocked, needs you → red
+      *)
+        printf 'idle' > "$f" ;;      # idle / awaiting next prompt → green
+    esac
     ;;
   Stop)
     # A turn that ends with background tasks still running isn't really idle.
