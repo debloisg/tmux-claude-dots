@@ -19,4 +19,12 @@ follow [Semantic Versioning](https://semver.org/).
   polling daemon.
 - Configurable glyphs, colors, picker key, popup size, and command matcher.
 
+### Changed
+- Dots are ordered by session name (matching tmux's alphabetical session
+  switcher) instead of pane launch order.
+- A finished turn stays **green** until you switch into the pane, then greys to
+  idle ("seen") — instead of dropping to gray as soon as Claude went idle.
+- Separator spacing is uniform; the dot strip keeps an even gap from the next
+  status-right module.
+
 [Unreleased]: https://github.com/YOUR_GH_USER/tmux-claude-dots

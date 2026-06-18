@@ -24,15 +24,17 @@ case "$event" in
     ;;
   Notification)
     # Claude fires Notification both when it needs permission (truly blocked,
-    # show red) and when it has simply gone idle waiting for your next prompt
-    # (a finished turn — keep that green, not red). Tell them apart by message.
+    # show orange) and when it has simply finished and is waiting for your next
+    # prompt. Tell them apart by message: only a permission ask is "needs you";
+    # anything else is a finished turn, which stays green (not gray) — otherwise
+    # this would overwrite the green `done` that Stop just wrote.
     msg=""
     command -v jq >/dev/null 2>&1 && msg="$(jq -r '.message // empty' 2>/dev/null)"
     case "$msg" in
       *[Pp]ermission*|*[Aa]pprove*|*[Aa]llow*|*[Cc]onfirm*)
-        printf 'waiting' > "$f" ;;   # blocked, needs you → red
+        printf 'waiting' > "$f" ;;   # blocked, needs you → orange
       *)
-        printf 'idle' > "$f" ;;      # idle / awaiting next prompt → green
+        printf 'done' > "$f" ;;      # finished, awaiting next prompt → green
     esac
     ;;
   Stop)

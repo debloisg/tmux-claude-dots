@@ -72,6 +72,14 @@ for s in "${sorder[@]}"; do
     dfirst=0
     pid="${R_pid[k]}"
     state="$(cd_read "$state_dir/${pid#%}")"
+    # Acknowledge: a finished (green) session you've now switched into has been
+    # seen, so drop it to idle (gray). This fires the moment the pane is the
+    # active one — switching panes/windows repaints the bar — and persists, so
+    # it greys out once and stays grey until its next turn.
+    if [ "${R_active[k]}" = "1" ] && [ "$state" = "done" ]; then
+      state="idle"
+      printf 'idle' > "$state_dir/${pid#%}"
+    fi
     # Unknown panes (no hook event yet) use a hollow circle; known states fill.
     case "$state" in
       working) col="$c_work"; base="$glyph" ;;

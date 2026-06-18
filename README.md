@@ -2,7 +2,7 @@
 
 A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/claude-code) session running in your tmux server — rendered as small colored dots in the status bar, one per session.
 
-- 🔵 **working** · 🟠 **needs you** (permission) · 🟢 **finished** · ⚪ **idle** · ○ **unknown**
+- 🔵 **working** · 🟠 **needs you** (permission/approval) · 🟢 **finished — your turn** · ⚪ **idle / seen** · ○ **unknown**
 - **Click a dot** to jump straight to that pane.
 - **`prefix + G`** opens an `fzf` picker with rich rows + a live preview of each session, and switches on Enter.
 - **No polling daemon.** State is pushed by Claude Code hooks, which nudge tmux to repaint instantly — so the bar updates the moment a session changes, with zero idle CPU and no flicker.
@@ -109,6 +109,51 @@ Claude Code ──hook──▶ claude-hook.sh ──writes──▶ $TMPDIR/cla
 - Each Claude session is keyed by its tmux **pane id** (`$TMUX_PANE`), so multiple sessions per window, worktrees, and splits all track independently.
 - `dots.sh` reaps state files whose pane no longer exists, so crashed sessions clean themselves up.
 - Switching always re-targets the **real client** (`switch-client -c`), which matters because the picker runs inside a `display-popup` (its own client).
+
+---
+
+## States
+
+Each pane moves through five states. Hooks drive every transition except the
+final "seen" step, which the renderer does when you switch into a finished pane.
+
+```
+   ○ unknown            no hook has fired yet for this pane
+        │
+        │  any event
+        ▼
+   ● working  (blue)    Claude is busy — running, thinking, using tools
+        │
+        ├──▶ ● waiting  (orange)   Claude needs you: a permission / approval prompt
+        │        │
+        │        └──── you approve, a tool runs ───▶ back to ● working
+        │
+        └──▶ ● done     (green)    turn finished — your turn to read / reply
+                 │
+                 ├──── you switch into the pane (you've seen it) ──▶ ● idle (gray)
+                 │
+                 └──── you send the next prompt ───────────────────▶ ● working
+
+   ● idle (gray)        seen — nothing to do; next prompt sends it back to working
+
+   SessionEnd ──▶ the pane's state file is removed ──▶ its dot disappears
+```
+
+| Hook event | Condition | State | Dot |
+|------------|-----------|-------|-----|
+| `UserPromptSubmit` / `PreToolUse` | — | working | 🔵 |
+| `Notification` | message looks like permission/approve/allow/confirm | waiting | 🟠 |
+| `Notification` | anything else (idle, etc.) | done | 🟢 |
+| `Stop` | background tasks still running | working | 🔵 |
+| `Stop` | no background tasks | done | 🟢 |
+| *(renderer)* | a finished pane (done) becomes the active pane | idle | ⚪ |
+| `SessionEnd` | — | removed | – |
+
+> A finished turn stays **green** until you actually switch into the pane —
+> green means "a session wants your eyes", gray means "seen, nothing to do".
+> Claude only goes **orange** when it's genuinely blocked on you (a permission
+> or approval prompt); a turn that ends with a prose question fires `Stop`, so
+> it shows green like any other finished turn.
 
 ---
 
