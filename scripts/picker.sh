@@ -14,7 +14,10 @@ state_dir="$(cd_state_dir)"
 
 # State priority for the aggregate icon on a session line (most urgent wins).
 cd_prio() {
-  case "$1" in waiting) echo 4 ;; working) echo 3 ;; done) echo 2 ;; idle) echo 1 ;; *) echo 0 ;; esac
+  case "$1" in
+    waiting) echo 5 ;; working) echo 4 ;; background) echo 3 ;;
+    done) echo 2 ;; idle) echo 1 ;; *) echo 0 ;;
+  esac
 }
 
 # Tree: each session is a parent line; its Claude panes nest underneath, named
@@ -95,9 +98,9 @@ fi
 reload="bash $DIR/picker.sh --rows"
 
 # Legend of state colors + key hints, shown above the list.
-legend="$(printf '%b working  %b finished  %b needs you  %b idle  %b unknown' \
-  "$(cd_icon_ansi working)" "$(cd_icon_ansi done)" "$(cd_icon_ansi waiting)" \
-  "$(cd_icon_ansi idle)" "$(cd_icon_ansi unknown)")"
+legend="$(printf '%b working  %b background  %b finished  %b needs you  %b idle  %b unknown' \
+  "$(cd_icon_ansi working)" "$(cd_icon_ansi background)" "$(cd_icon_ansi done)" \
+  "$(cd_icon_ansi waiting)" "$(cd_icon_ansi idle)" "$(cd_icon_ansi unknown)")"
 keys=$'\033[90menter: switch   ctrl-x: kill   ctrl-r: refresh\033[0m'
 
 sel="$(printf '%s\n' "$rows" | fzf \

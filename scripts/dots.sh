@@ -18,6 +18,7 @@ sep="$(cd_opt @claude_dots_separator ' ')"
 gsep="$(cd_opt @claude_dots_group_separator '│')"
 gsep_col="$(cd_opt @claude_dots_group_separator_color 'colour240')"
 c_work="$(cd_opt @claude_dots_color_working 'blue')"
+c_bg="$(cd_opt   @claude_dots_color_background 'cyan')"
 c_wait="$(cd_opt @claude_dots_color_waiting 'colour208')"
 c_done="$(cd_opt @claude_dots_color_done 'green')"
 c_idle="$(cd_opt @claude_dots_color_idle 'colour245')"
@@ -82,11 +83,12 @@ for s in "${sorder[@]}"; do
     fi
     # Unknown panes (no hook event yet) use a hollow circle; known states fill.
     case "$state" in
-      working) col="$c_work"; base="$glyph" ;;
-      waiting) col="$c_wait"; base="$glyph" ;;
-      done)    col="$c_done"; base="$glyph" ;;
-      idle)    col="$c_idle"; base="$glyph" ;;
-      *)       col="$c_unk";  base="$glyph_unknown" ;;
+      working)    col="$c_work"; base="$glyph" ;;
+      background) col="$c_bg";   base="$glyph" ;;
+      waiting)    col="$c_wait"; base="$glyph" ;;
+      done)       col="$c_done"; base="$glyph" ;;
+      idle)       col="$c_idle"; base="$glyph" ;;
+      *)          col="$c_unk";  base="$glyph_unknown" ;;
     esac
     # Emphasis: the pane you're typing in gets a larger glyph + bold/underline;
     # other panes in that same on-screen window get an underline; rest plain.

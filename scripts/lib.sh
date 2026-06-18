@@ -32,11 +32,12 @@ cd_read() {
 # cd_icon_ansi STATE — colored glyph for fzf rows (needs fzf --ansi).
 cd_icon_ansi() {
   case "$1" in
-    working) printf '\033[1;34m●\033[0m'    ;; # blue ●
-    waiting) printf '\033[38;5;208m●\033[0m';; # orange ● (needs you)
-    done)    printf '\033[1;32m●\033[0m'    ;; # green ● (finished)
-    idle)    printf '\033[38;5;245m●\033[0m';; # gray ● (idle)
-    *)       printf '\033[38;5;240m○\033[0m';; # gray ○ (unknown, hollow)
+    working)    printf '\033[1;34m●\033[0m'    ;; # blue ●
+    background) printf '\033[38;5;44m●\033[0m' ;; # cyan ● (waiting on a bg command)
+    waiting)    printf '\033[38;5;208m●\033[0m';; # orange ● (needs you)
+    done)       printf '\033[1;32m●\033[0m'    ;; # green ● (finished)
+    idle)       printf '\033[38;5;245m●\033[0m';; # gray ● (idle)
+    *)          printf '\033[38;5;240m○\033[0m';; # gray ○ (unknown, hollow)
   esac
 }
 

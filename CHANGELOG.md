@@ -29,6 +29,10 @@ follow [Semantic Versioning](https://semver.org/).
 - Separator spacing is uniform; the dot strip keeps an even gap from the next
   status-right module.
 
+- New `background` state (cyan): a turn that ends while a background shell
+  command is still running, distinct from busy (blue) and idle (gray).
+  Configurable via `@claude_dots_color_background`.
+
 ### Fixed
 - Auto mode now reserves extra `status-right-length` (configurable via
   `@claude_dots_reserve`) so the dots don't push the theme's right-hand modules

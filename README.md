@@ -2,7 +2,7 @@
 
 A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/claude-code) session running in your tmux server — rendered as small colored dots in the status bar, one per session.
 
-- 🔵 **working** · 🟠 **needs you** (permission/approval) · 🟢 **finished — your turn** · ⚪ **idle / seen** · ○ **unknown**
+- 🔵 **working** · 🩵 **background** (waiting on a shell command) · 🟠 **needs you** (permission/approval) · 🟢 **finished — your turn** · ⚪ **idle / seen** · ○ **unknown**
 - **Click a dot** to jump straight to that pane.
 - **`prefix + G`** opens an `fzf` picker with rich rows + a live preview of each session, and switches on Enter.
 - **No polling daemon.** State is pushed by Claude Code hooks, which nudge tmux to repaint instantly — so the bar updates the moment a session changes, with zero idle CPU and no flicker.
@@ -124,6 +124,10 @@ final "seen" step, which the renderer does when you switch into a finished pane.
         ▼
    ● working  (blue)    Claude is busy — running, thinking, using tools
         │
+        ├──▶ ● background (cyan)   turn ended but a background shell command is
+        │        │                 still running; clears on its next turn
+        │        └──── next turn ──▶ working / done as usual
+        │
         ├──▶ ● waiting  (orange)   Claude needs you: a permission / approval prompt
         │        │
         │        └──── you approve, a tool runs ───▶ back to ● working
@@ -144,7 +148,7 @@ final "seen" step, which the renderer does when you switch into a finished pane.
 | `UserPromptSubmit` / `PreToolUse` | — | working | 🔵 |
 | `Notification` | message looks like permission/approve/allow/confirm | waiting | 🟠 |
 | `Notification` | anything else (idle, etc.) | done | 🟢 |
-| `Stop` | background tasks still running | working | 🔵 |
+| `Stop` | a background shell command is still running | background | 🩵 |
 | `Stop` | no background tasks | done | 🟢 |
 | *(renderer)* | a finished pane (done) becomes the active pane | idle | ⚪ |
 | `SessionEnd` | — | removed | – |
@@ -172,6 +176,7 @@ All options are global tmux user options — set them **before** the plugin load
 | `@claude_dots_group_separator_color` | `colour240` | color of the group separator |
 | `@claude_dots_command` | `claude` | extended-regex of `pane_current_command`(s) treated as a Claude session |
 | `@claude_dots_color_working` | `blue` | busy |
+| `@claude_dots_color_background` | `cyan` | turn ended, a background shell command is still running |
 | `@claude_dots_color_waiting` | `colour208` | blocked on you (permission) — orange |
 | `@claude_dots_color_done` | `green` | turn just finished |
 | `@claude_dots_color_idle` | `colour245` | idle / awaiting next prompt — gray |
