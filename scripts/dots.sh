@@ -36,8 +36,8 @@ for f in "$state_dir"/*; do
 done
 
 # Read all Claude panes, then group dots by session with a separator between
-# groups. (cd_list_panes is sorted by pane id, so panes stay ordered within a
-# session; sessions appear in first-seen order.)
+# groups. (cd_list_panes is sorted by session name, so sessions appear in the
+# same alphabetical order as tmux's session switcher.)
 declare -a R_pid=() R_sess=() R_active=() R_inwin=()
 while IFS=$'\t' read -r pid sess _widx _wname _cmd _cwd active inwin; do
   [ -n "$pid" ] || continue
@@ -56,14 +56,20 @@ for ((k = 0; k < n; k++)); do
   [ -n "${seen[$s]:-}" ] || { seen[$s]=1; sorder+=("$s"); }
 done
 
+# Spacing is uniform: dots within a group are joined by $sep, and groups by
+# $sep + bar + $sep, so every gap is exactly one separator wide. No trailing
+# separator is appended.
 out=""
 i=0
-first=1
+gfirst=1
 for s in "${sorder[@]}"; do
-  [ "$first" -eq 0 ] && out+=" #[fg=${gsep_col}]${gsep}#[default] "
-  first=0
+  [ "$gfirst" -eq 0 ] && out+="${sep}#[fg=${gsep_col}]${gsep}#[default]${sep}"
+  gfirst=0
+  dfirst=1
   for ((k = 0; k < n; k++)); do
     [ "${R_sess[k]}" = "$s" ] || continue
+    [ "$dfirst" -eq 0 ] && out+="$sep"
+    dfirst=0
     pid="${R_pid[k]}"
     state="$(cd_read "$state_dir/${pid#%}")"
     # Unknown panes (no hook event yet) use a hollow circle; known states fill.
@@ -86,7 +92,7 @@ for s in "${sorder[@]}"; do
     printf '%s\t%s\n' "$i" "$pid" >> "$map"   # index -> pane id, used by click.sh
     # range and color in SEPARATE blocks so the fg always wins over the theme's
     # default status style (Catppuccin resets color if they share one #[...]).
-    out+="#[range=user|cd${i}]#[${emph}fg=${col}]${g}#[default]#[norange]${sep}"
+    out+="#[range=user|cd${i}]#[${emph}fg=${col}]${g}#[default]#[norange]"
     i=$((i + 1))
   done
 done

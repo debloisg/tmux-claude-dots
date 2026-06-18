@@ -62,7 +62,8 @@ cd_match() { cd_opt @claude_dots_command 'claude'; }
 # has a state file (so a pane that backgrounded claude still shows).
 #   active = 1  the focused pane of an attached session (what you're typing in)
 #   inwin  = 1  any pane in the window currently displayed on an attached client
-# Output is sorted by pane id for a stable left-to-right dot order.
+# Sorted by session name (to match tmux's alphabetical session switcher), then
+# by pane number within a session, for a stable, intuitive left-to-right order.
 cd_list_panes() {
   local tab=$'\t' state_dir re
   state_dir="$(cd_state_dir)"
@@ -76,7 +77,7 @@ cd_list_panes() {
         printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$pid" "$sess" "$widx" "$wname" "$cmd" "$cwd" "$active" "$inwin"
       fi
     done \
-  | sort -t"$tab" -k1,1
+  | sort -t"$tab" -k2,2 -k1.2,1n
 }
 
 # cd_switch PANE_ID [CLIENT] — teleport CLIENT (or the current client) to the
