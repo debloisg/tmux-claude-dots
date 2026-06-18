@@ -27,4 +27,9 @@ follow [Semantic Versioning](https://semver.org/).
 - Separator spacing is uniform; the dot strip keeps an even gap from the next
   status-right module.
 
+### Fixed
+- Auto mode now reserves extra `status-right-length` (configurable via
+  `@claude_dots_reserve`) so the dots don't push the theme's right-hand modules
+  off the screen. Idempotent — the original length is remembered.
+
 [Unreleased]: https://github.com/YOUR_GH_USER/tmux-claude-dots

@@ -36,6 +36,21 @@ main() {
       *"$frag"*) : ;;
       *) tmux set-option -g status-right "$frag$cur" ;;
     esac
+
+    # status-right has a character budget (status-right-length). Our dots eat
+    # into it, so the modules to our right (e.g. a theme's session capsule) get
+    # truncated off the edge if the budget is tight. Reserve extra room once.
+    # Idempotent: remember the original length in a user option and only ever
+    # extend from that base, so reloads don't keep growing it.
+    local reserve base
+    reserve="$(cd_opt @claude_dots_reserve '60')"
+    base="$(tmux show-option -gqv @claude_dots_srl_base)"
+    if [ -z "$base" ]; then
+      base="$(tmux show-option -gqv status-right-length)"
+      [ -n "$base" ] || base=40
+      tmux set-option -g @claude_dots_srl_base "$base"
+      tmux set-option -g status-right-length "$((base + reserve))"
+    fi
   fi
 }
 

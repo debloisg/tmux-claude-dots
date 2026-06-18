@@ -177,6 +177,7 @@ All options are global tmux user options — set them **before** the plugin load
 | `@claude_dots_color_idle` | `colour245` | idle / awaiting next prompt — gray |
 | `@claude_dots_color_unknown` | `colour240` | no event yet — gray hollow ○ |
 | `@claude_dots_auto_status` | `on` | auto-prepend the renderer to `status-right`; set `off` to place it yourself |
+| `@claude_dots_reserve` | `60` | extra `status-right-length` reserved for the dots so modules to their right aren't truncated (auto mode only) |
 | `@claude_dots_popup_width` | `80%` | picker popup width |
 | `@claude_dots_popup_height` | `70%` | picker popup height |
 | `@claude_dots_dir` | `$TMPDIR/claude-dots` | state directory (also export `CLAUDE_DOTS_DIR` for the hook if you change this) |
