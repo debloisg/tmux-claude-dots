@@ -1,7 +1,5 @@
 # tmux-claude-dots
 
-<img width="540" height="144" alt="claude-dots-jump" src="https://github.com/user-attachments/assets/72a8384e-f044-4ed9-a8ac-8f5be0160e9c" />
-
 <img width="800" height="313" alt="claude-dots-explained" src="https://github.com/user-attachments/assets/aed8e1b6-7f7c-4f35-ab74-98a7a0fd2e63" />
 
 
