@@ -4,11 +4,6 @@
 
 
 
-
-https://github.com/user-attachments/assets/b79d40b7-38e2-40a0-8426-f55913d5f76a
-
-
-
 A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/claude-code) session running in your tmux server — rendered as small colored dots in the status bar, one per session.
 
 - Dots, grouped by tmux sessions indicating state of claude code. 
