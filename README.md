@@ -1,5 +1,8 @@
 # tmux-claude-dots
 
+<img width="540" height="144" alt="claude-dots-jump" src="https://github.com/user-attachments/assets/72a8384e-f044-4ed9-a8ac-8f5be0160e9c" />
+
+
 A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/claude-code) session running in your tmux server — rendered as small colored dots in the status bar, one per session.
 
 - Dots, grouped by tmux sessions indicating state of claude code. 
