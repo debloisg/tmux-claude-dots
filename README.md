@@ -2,8 +2,14 @@
 
 A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/claude-code) session running in your tmux server — rendered as small colored dots in the status bar, one per session.
 
-- 🔵 **working** · 🩵 **background** (waiting on a shell command) · 🟠 **needs you** (permission/approval) · 🟢 **finished — your turn** · ⚪ **idle / seen** · ○ **unknown**
+- Dots, grouped by tmux sessions indicating state of claude code. 
+    - 🔵 **working**
+    - 🟠 **needs you** (permission/approval/question)
+    - 🟢 **finished — your turn**
+    - ⚪ **idle / seen**
+    - ○ **unknown**
 - **Click a dot** to jump straight to that pane.
+- **jump to a claude with alphanumerics**: you can activate the jump mode that transforms the dots into alphanumeric characters to jump to the right one.
 - **`prefix + G`** opens an `fzf` picker with rich rows + a live preview of each session, and switches on Enter.
 - **No polling daemon.** State is pushed by Claude Code hooks, which nudge tmux to repaint instantly — so the bar updates the moment a session changes, with zero idle CPU and no flicker.
 
