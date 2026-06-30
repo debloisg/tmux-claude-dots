@@ -11,6 +11,7 @@ A live, glanceable view of every [Claude Code](https://docs.claude.com/en/docs/c
     - 🟢 **finished — your turn**
     - ⚪ **idle / seen**
     - ○ **unknown**
+    - _ **underlined dots** means they are in the active tmux windows. The active claude sessiosn has a bigger dot.
 - **Click a dot** to jump straight to that pane.
 - **jump to a claude with alphanumerics**: you can activate the jump mode that transforms the dots into alphanumeric characters to jump to the right one.
 - **`prefix + G`** opens an `fzf` picker with rich rows + a live preview of each session, and switches on Enter.
